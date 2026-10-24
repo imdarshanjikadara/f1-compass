@@ -20,7 +20,6 @@ import {
   Edit3,
   ExternalLink,
   HelpCircle,
-  RefreshCw,
 } from 'lucide-react';
 
 interface MyChecklistViewProps {
@@ -28,10 +27,6 @@ interface MyChecklistViewProps {
   items: ChecklistItem[];
   checkedMap: Record<string, boolean>;
   onToggleStep: (stepKey: string) => void;
-  onRefreshAi: () => void;
-  isGeneratingAi: boolean;
-  aiError: string | null;
-  isAiPersonalized: boolean;
   onEditDates?: () => void;
 }
 
@@ -40,10 +35,6 @@ export const MyChecklistView: React.FC<MyChecklistViewProps> = ({
   items,
   checkedMap,
   onToggleStep,
-  onRefreshAi,
-  isGeneratingAi,
-  aiError,
-  isAiPersonalized,
   onEditDates,
 }) => {
   const [filterMode, setFilterMode] = useState<'all' | 'remaining' | 'completed'>('all');
@@ -174,22 +165,6 @@ export const MyChecklistView: React.FC<MyChecklistViewProps> = ({
                 Add to Calendar ({upcomingCount > 0 ? `${upcomingCount} upcoming` : 'All'} .ics)
               </span>
             </button>
-
-            <button
-              type="button"
-              onClick={onRefreshAi}
-              disabled={isGeneratingAi}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-teal-700 dark:bg-teal-600 hover:bg-teal-800 dark:hover:bg-teal-500 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isGeneratingAi ? 'animate-spin' : ''}`} />
-              <span>
-                {isGeneratingAi
-                  ? 'Personalizing with Gemini...'
-                  : isAiPersonalized
-                  ? 'Refresh Gemini Notes'
-                  : 'Personalize with Gemini'}
-              </span>
-            </button>
           </div>
         </div>
 
@@ -235,24 +210,6 @@ export const MyChecklistView: React.FC<MyChecklistViewProps> = ({
             ))}
           </div>
         </div>
-
-        {aiError && (
-          <div
-            role="alert"
-            className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/70 text-xs text-amber-900 dark:text-amber-200 flex items-center justify-between gap-3"
-          >
-            <span>
-              Showing standard rule-bound checklist guidance ({aiError}). You can retry Gemini personalization anytime.
-            </span>
-            <button
-              type="button"
-              onClick={onRefreshAi}
-              className="underline font-semibold whitespace-nowrap shrink-0"
-            >
-              Retry
-            </button>
-          </div>
-        )}
       </section>
 
       {/* Phase-Grouped Checklist Items */}

@@ -56,7 +56,7 @@ export const TimelineChatPanel: React.FC<TimelineChatPanelProps> = ({
     }
   }, [messages, isLoading, mobileDrawerOpen]);
 
-  const sendQuestion = async (questionText: string) => {
+  const sendQuestion = async (questionText: string, isStarter = false) => {
     const trimmed = questionText.trim();
     if (!trimmed || isLoading) return;
 
@@ -151,6 +151,7 @@ export const TimelineChatPanel: React.FC<TimelineChatPanelProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question: trimmed,
+          mode: isStarter ? 'starter' : 'custom',
           timelineContext,
         }),
       });
@@ -197,7 +198,7 @@ export const TimelineChatPanel: React.FC<TimelineChatPanelProps> = ({
               key={prompt}
               type="button"
               disabled={isLoading}
-              onClick={() => sendQuestion(prompt)}
+              onClick={() => sendQuestion(prompt, true)}
               className="px-2.5 py-1.5 text-xs text-left font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/90 hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal-800 dark:hover:text-teal-300 rounded-lg transition-colors disabled:opacity-50"
             >
               {prompt}

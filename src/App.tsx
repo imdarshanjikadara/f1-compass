@@ -315,29 +315,7 @@ export default function App() {
     }
   }, [profile, unemploymentSummary, currentFingerprint]);
 
-  // Automatically trigger Gemini personalization when the student opens the "My Checklist" tab
-  // and their current date fingerprint hasn't been personalized yet
-  useEffect(() => {
-    if (
-      activeTab === 'checklist' &&
-      !isEditingDates &&
-      Boolean(profile.programEndDate) &&
-      (!aiCache || aiCache.fingerprint !== currentFingerprint) &&
-      !isGeneratingAi &&
-      !aiError
-    ) {
-      generatePersonalizedChecklist();
-    }
-  }, [
-    activeTab,
-    isEditingDates,
-    profile.programEndDate,
-    aiCache,
-    currentFingerprint,
-    isGeneratingAi,
-    aiError,
-    generatePersonalizedChecklist,
-  ]);
+  // Smart Hybrid Mode: My Checklist runs 100% on the built-in deterministic checklist engine (0 API calls)
 
   const handleToggleChecklistStep = (stepKey: string) => {
     setCheckedMap((prev) => ({
@@ -946,12 +924,6 @@ export default function App() {
                     items={checklistItems}
                     checkedMap={checkedMap}
                     onToggleStep={handleToggleChecklistStep}
-                    onRefreshAi={generatePersonalizedChecklist}
-                    isGeneratingAi={isGeneratingAi}
-                    aiError={aiError}
-                    isAiPersonalized={Boolean(
-                      aiCache && aiCache.fingerprint === currentFingerprint
-                    )}
                     onEditDates={() => setIsEditingDates(true)}
                   />
                 )}
@@ -1008,7 +980,7 @@ export default function App() {
                 rel="noopener noreferrer"
                 className="font-semibold text-teal-700 dark:text-teal-400 hover:underline underline-offset-2"
               >
-                Darshankumar Jikadara
+                Darshan Jikadara
               </a>
             </span>
           </div>

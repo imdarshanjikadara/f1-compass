@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "description": "Free planning tool that helps F-1 international students track OPT and STEM OPT filing windows, grace periods, and unemployment days.",
-  "author": "Darshankumar Jikadara (https://www.linkedin.com/in/imdarshanjikadara/)",
+  "author": "Darshan Jikadara (https://www.linkedin.com/in/imdarshanjikadara/)",
   "license": "MIT",
   "type": "module",
   "scripts": {

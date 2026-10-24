@@ -2,7 +2,7 @@
 
 **F-1 Compass** is a free, privacy-first web application designed to help F-1 international students in the United States calmly and accurately track their **Post-Completion OPT** and **24-Month STEM OPT** filing windows, **DSO I-20 recommendation cutoffs**, **60-day grace periods**, and **unemployment day limits**.
 
-Built with love for F-1 students by **[Darshankumar Jikadara](https://www.linkedin.com/in/imdarshanjikadara/)**.
+Built with love for F-1 students by **[Darshan Jikadara](https://www.linkedin.com/in/imdarshanjikadara/)**.
 
 ---
 
@@ -43,8 +43,9 @@ Every year, hundreds of thousands of F-1 international students navigate overlap
    Every single date, countdown, filing window, grace period, and unemployment count is calculated strictly by deterministic TypeScript functions (`src/utils/dateRules.ts`) in local calendar time (`YYYY-MM-DD`). AI is **never** used to compute or alter any date or deadline.
 2. **100% Browser-Local Privacy**:
    All personal dates, degree details, employment intervals, and checklist checkmarks are saved exclusively in your browser's `localStorage` (`f1_compass_state_v1`). Users can clear their data at any time via the two-step **"Reset my data"** action.
-3. **Rule-Grounded AI Assistance (Optional Enhancement)**:
-   When a backend `GEMINI_API_KEY` is configured, users can optionally tailor checklist step explanations to their degree level/situation or ask plain-English questions about their calculated timeline. Out-of-scope topics (H-1B, Cap-Gap, international travel, visa stamping, CPT, RFEs, or legal advice) are deterministically intercepted and redirected to the student's DSO or an immigration attorney.
+3. **Smart Hybrid Mode (Zero-Token Core + Custom Q&A Fallback)**:
+   - **My Checklist**: Runs 100% on the built-in deterministic checklist engine (`src/utils/checklistRules.ts`), dynamically tailoring every step to your degree level (`Bachelor's`, `Master's`, `PhD`), STEM status, and entered I-20/EAD dates with **0 API calls**.
+   - **Ask About Your Timeline**: Clicking any of the **4 Starter Prompt buttons** or asking an out-of-scope question (H-1B, Cap-Gap, international travel, visa stamping, CPT, RFEs, or legal advice) is answered 100% deterministically in `0ms` using **0 API tokens**. The Gemini API (`@google/genai`) is only called when a student manually types a custom question into the text box, with automatic multi-model fallback and a deterministic rule-bound backup if the API is busy.
 
 ---
 
@@ -89,7 +90,7 @@ Every year, hundreds of thousands of F-1 international students navigate overlap
   3. **Phase 3: Active Post-Completion OPT & Reporting**
   4. **Phase 4: 24-Month STEM OPT Extension** (automatically hidden for Non-STEM students)
 - Check off completed steps with a live progress bar (`X/Y completed`).
-- **Optional Personalization**: Click **"Personalize Copy for My Situation"** to tailor step instructions to your degree level and current stage while strictly locking all due dates to the deterministic engine.
+- **Rule-Bound Personalization**: Automatically tailors step titles, instructions, and *"Why this matters"* notes to your degree level (`Bachelor's`, `Master's`, `PhD`), STEM status, and current stage with zero API latency.
 
 ### G. Unemployment Day Counter (`UnemploymentTracker.tsx`)
 - Supports both **Initial Post-Completion OPT (90-day cap)** and **Active STEM OPT (150-day aggregate cap)**.
@@ -350,5 +351,5 @@ git push -u origin main
 
 ## 13. Author & License
 
-- **Created by**: **[Darshankumar Jikadara](https://www.linkedin.com/in/imdarshanjikadara/)** — Built with love for F-1 students.
+- **Created by**: **[Darshan Jikadara](https://www.linkedin.com/in/imdarshanjikadara/)** — Built with love for F-1 students.
 - **License**: Released under the [MIT License](./LICENSE).

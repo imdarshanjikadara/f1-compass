@@ -342,7 +342,7 @@ async function startServer() {
 
   app.post('/api/chat/ask', async (req, res) => {
     try {
-      const { question, timelineContext } = req.body || {};
+      const { question, mode, timelineContext } = req.body || {};
       const trimmedQuestion = String(question || '').trim();
 
       if (!trimmedQuestion) {
@@ -357,6 +357,12 @@ async function startServer() {
           answer: `I can't answer questions about ${outOfScopeTopic} reliably because F-1 Compass only calculates dates using its 6 built-in Post-Completion OPT and STEM OPT deadline and unemployment rules. Please contact your school's DSO or a qualified immigration attorney for guidance on your situation.`,
           isOutOfScope: true,
         });
+        return;
+      }
+
+      // 2. Smart Hybrid Mode: Starter prompt buttons are answered 100% deterministically (0 API tokens)
+      if (mode === 'starter') {
+        res.json(buildDeterministicTimelineAnswer(trimmedQuestion, timelineContext));
         return;
       }
 
