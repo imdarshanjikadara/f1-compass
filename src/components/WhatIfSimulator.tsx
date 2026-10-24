@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { StudentProfile } from '../types';
 import {
   addCalendarDays,
+  calculateSuggestedEadEndDate,
   diffCalendarDays,
   formatCountdown,
   formatDisplayDate,
   parseLocalDate,
 } from '../utils/dateRules';
+import { DatePickerInput } from './DatePickerInput';
 import { Check, RotateCcw, Sliders } from 'lucide-react';
 
 interface WhatIfSimulatorProps {
@@ -97,15 +99,17 @@ export const WhatIfSimulator: React.FC<WhatIfSimulatorProps> = ({
       : profile.eadEndDate;
 
   const handleApplyToProfile = () => {
+    const nextStart = simRequestedStart || profile.eadStartDate;
+    const nextStemI20 = simStemI20 || profile.stemI20IssueDate;
+    const hasStemI20 = Boolean(nextStemI20 && profile.stemStatus !== 'no');
     onApplySimulatedDates({
       ...profile,
       optI20IssueDate: simOptI20,
-      eadStartDate: simRequestedStart || profile.eadStartDate,
-      eadEndDate:
-        !profile.eadEndDate && simRequestedStart
-          ? addCalendarDays(simRequestedStart, 364)
-          : profile.eadEndDate,
-      stemI20IssueDate: simStemI20 || profile.stemI20IssueDate,
+      eadStartDate: nextStart,
+      eadEndDate: nextStart
+        ? calculateSuggestedEadEndDate(nextStart, hasStemI20)
+        : profile.eadEndDate,
+      stemI20IssueDate: nextStemI20,
     });
     setAppliedBanner(true);
     setTimeout(() => setAppliedBanner(false), 2500);
@@ -126,7 +130,7 @@ export const WhatIfSimulator: React.FC<WhatIfSimulatorProps> = ({
   return (
     <section
       id="simulator-section"
-      className="bg-white dark:bg-[#111921] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-6 space-y-5 overflow-hidden"
+      className="bg-white dark:bg-[#111921] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-6 space-y-5"
     >
       <div className="flex items-start justify-between gap-3 pb-4 border-b border-slate-200/80 dark:border-slate-800">
         <div className="min-w-0">
@@ -157,12 +161,11 @@ export const WhatIfSimulator: React.FC<WhatIfSimulatorProps> = ({
         >
           1. If my DSO issues my OPT I-20 on:
         </label>
-        <input
+        <DatePickerInput
           id="sim-opt-i20"
-          type="date"
+          size="sm"
           value={simOptI20}
-          onChange={(e) => setSimOptI20(e.target.value)}
-          className="block w-full min-w-0 max-w-full appearance-none box-border px-3.5 py-2 text-xs font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
+          onChange={(val) => setSimOptI20(val)}
         />
 
         {simOpt30Str && opt60CutoffStr && (
@@ -203,12 +206,11 @@ export const WhatIfSimulator: React.FC<WhatIfSimulatorProps> = ({
         >
           2. Check a Requested OPT Start Date (Grace Period Rule):
         </label>
-        <input
+        <DatePickerInput
           id="sim-opt-start"
-          type="date"
+          size="sm"
           value={simRequestedStart}
-          onChange={(e) => setSimRequestedStart(e.target.value)}
-          className="block w-full min-w-0 max-w-full appearance-none box-border px-3.5 py-2 text-xs font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
+          onChange={(val) => setSimRequestedStart(val)}
         />
 
         {startOffsetFromProgEnd !== null && graceStartStr && graceEndStr && (
@@ -245,12 +247,11 @@ export const WhatIfSimulator: React.FC<WhatIfSimulatorProps> = ({
           >
             3. If my DSO issues my STEM OPT I-20 on:
           </label>
-          <input
+          <DatePickerInput
             id="sim-stem-i20"
-            type="date"
+            size="sm"
             value={simStemI20}
-            onChange={(e) => setSimStemI20(e.target.value)}
-            className="block w-full min-w-0 max-w-full appearance-none box-border px-3.5 py-2 text-xs font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
+            onChange={(val) => setSimStemI20(val)}
           />
 
           {simStem60Str && (

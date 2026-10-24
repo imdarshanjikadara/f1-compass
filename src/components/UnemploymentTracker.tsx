@@ -9,6 +9,7 @@ import {
   formatDisplayDate,
   parseLocalDate,
 } from '../utils/dateRules';
+import { DatePickerInput } from './DatePickerInput';
 import {
   Briefcase,
   Minus,
@@ -128,7 +129,7 @@ export const UnemploymentTracker: React.FC<UnemploymentTrackerProps> = ({
   return (
     <section
       id="unemployment-section"
-      className="bg-white dark:bg-[#111921] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-6 space-y-5 overflow-hidden"
+      className="bg-white dark:bg-[#111921] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-6 space-y-5"
     >
       {/* Header & Mode Selector */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200/80 dark:border-slate-800">
@@ -423,11 +424,11 @@ export const UnemploymentTracker: React.FC<UnemploymentTrackerProps> = ({
                       <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">
                         Start Date
                       </label>
-                      <input
-                        type="date"
+                      <DatePickerInput
+                        size="sm"
                         value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="block w-full min-w-0 max-w-full appearance-none box-border px-3 py-2 text-xs font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
+                        onChange={(val) => setStartDate(val)}
+                        placeholder="Start date"
                       />
                     </div>
 
@@ -435,12 +436,12 @@ export const UnemploymentTracker: React.FC<UnemploymentTrackerProps> = ({
                       <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">
                         End Date
                       </label>
-                      <input
-                        type="date"
+                      <DatePickerInput
+                        size="sm"
                         disabled={isCurrent}
                         value={isCurrent ? '' : endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="block w-full min-w-0 max-w-full appearance-none box-border px-3 py-2 text-xs font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-teal-600"
+                        onChange={(val) => setEndDate(val)}
+                        placeholder={isCurrent ? 'Present' : 'End date'}
                       />
                     </div>
                   </div>

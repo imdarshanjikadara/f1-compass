@@ -93,6 +93,125 @@ export function formatDisplayDate(dateStr: string): string {
 }
 
 /**
+ * Calculates the standard USCIS EAD end date from an EAD start date:
+ * - Initial Post-Completion OPT (hasStemI20 = false): (Start Date + 1 calendar year) - 1 day
+ * - 24-Month STEM OPT (hasStemI20 = true): (Start Date + 2 calendar years) - 1 day
+ * Handles leap years (such as 2028) accurately in local calendar time.
+ */
+export function calculateSuggestedEadEndDate(
+  startDateStr: string,
+  hasStemI20 = false
+): string {
+  const dt = parseLocalDate(startDateStr);
+  if (!dt) return '';
+  const yearsToAdd = hasStemI20 ? 2 : 1;
+  const target = new Date(
+    dt.getFullYear() + yearsToAdd,
+    dt.getMonth(),
+    dt.getDate() - 1,
+    12,
+    0,
+    0,
+    0
+  );
+  return toDateInputString(target);
+}
+
+const MONTH_NAME_LOOKUP: Record<string, number> = {
+  jan: 1,
+  january: 1,
+  feb: 2,
+  february: 2,
+  mar: 3,
+  march: 3,
+  apr: 4,
+  april: 4,
+  may: 5,
+  jun: 6,
+  june: 6,
+  jul: 7,
+  july: 7,
+  aug: 8,
+  august: 8,
+  sep: 9,
+  sept: 9,
+  september: 9,
+  oct: 10,
+  october: 10,
+  nov: 11,
+  november: 11,
+  dec: 12,
+  december: 12,
+};
+
+/**
+ * Parses flexible user keyboard input into a validated YYYY-MM-DD string.
+ * Supports:
+ * - "YYYY-MM-DD" or "YYYY/MM/DD" (e.g. "2027-02-01")
+ * - "MM/DD/YYYY" or "M/D/YYYY" or "MM-DD-YYYY" (e.g. "02/01/2027", "2/1/2027")
+ * - "MMM D, YYYY" or "MMMM D, YYYY" (e.g. "Oct 9, 2026", "February 1 2027")
+ * Requires a full 4-digit year (1990–2099) so partial typing never fires prematurely.
+ */
+export function parseFlexibleUserDate(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+
+  // 1. YYYY-MM-DD or YYYY/MM/DD
+  const isoMatch = trimmed.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if (isoMatch) {
+    const y = Number(isoMatch[1]);
+    const m = Number(isoMatch[2]);
+    const d = Number(isoMatch[3]);
+    if (y >= 1990 && y <= 2099) {
+      const candidate = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      return parseLocalDate(candidate) ? candidate : null;
+    }
+    return null;
+  }
+
+  // 2. MM/DD/YYYY or M/D/YYYY or MM-DD-YYYY
+  const usMatch = trimmed.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (usMatch) {
+    const m = Number(usMatch[1]);
+    const d = Number(usMatch[2]);
+    const y = Number(usMatch[3]);
+    if (y >= 1990 && y <= 2099) {
+      const candidate = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      return parseLocalDate(candidate) ? candidate : null;
+    }
+    return null;
+  }
+
+  // 3. "Oct 9, 2026" or "October 9 2026"
+  const namedMonthFirst = trimmed.match(/^([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})$/);
+  if (namedMonthFirst) {
+    const m = MONTH_NAME_LOOKUP[namedMonthFirst[1].toLowerCase()];
+    const d = Number(namedMonthFirst[2]);
+    const y = Number(namedMonthFirst[3]);
+    if (m && y >= 1990 && y <= 2099) {
+      const candidate = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      return parseLocalDate(candidate) ? candidate : null;
+    }
+    return null;
+  }
+
+  // 4. "9 Oct 2026"
+  const dayFirstNamed = trimmed.match(/^(\d{1,2})\s+([A-Za-z]+),?\s+(\d{4})$/);
+  if (dayFirstNamed) {
+    const d = Number(dayFirstNamed[1]);
+    const m = MONTH_NAME_LOOKUP[dayFirstNamed[2].toLowerCase()];
+    const y = Number(dayFirstNamed[3]);
+    if (m && y >= 1990 && y <= 2099) {
+      const candidate = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      return parseLocalDate(candidate) ? candidate : null;
+    }
+    return null;
+  }
+
+  return null;
+}
+
+/**
  * Formats countdown string ("in 42 days", "today", "passed 3 days ago").
  */
 export function formatCountdown(daysFromToday: number): string {

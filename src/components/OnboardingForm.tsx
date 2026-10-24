@@ -7,8 +7,10 @@ import {
 } from '../types';
 import {
   addCalendarDays,
+  calculateSuggestedEadEndDate,
   formatDisplayDate,
 } from '../utils/dateRules';
+import { DatePickerInput } from './DatePickerInput';
 import {
   AlertTriangle,
   Check,
@@ -62,14 +64,65 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
     value: StudentProfile[K]
   ) => {
     if (key === 'stemStatus' && value === 'no') {
+      const recalculatedEnd = profile.eadStartDate
+        ? calculateSuggestedEadEndDate(profile.eadStartDate, false)
+        : profile.eadEndDate;
       onChange({
         ...profile,
         stemStatus: 'no',
         stemI20IssueDate: '',
         isCurrentlyOnStemOpt: false,
+        eadEndDate: recalculatedEnd,
       });
       return;
     }
+
+    if (key === 'eadStartDate') {
+      const newStart = String(value || '');
+      const hasStemI20 = Boolean(
+        profile.stemI20IssueDate && profile.stemStatus !== 'no'
+      );
+      const suggestedEnd = newStart
+        ? calculateSuggestedEadEndDate(newStart, hasStemI20)
+        : '';
+      onChange({
+        ...profile,
+        eadStartDate: newStart,
+        eadEndDate: newStart ? suggestedEnd : profile.eadEndDate,
+      });
+      return;
+    }
+
+    if (key === 'stemI20IssueDate') {
+      const newStemI20 = String(value || '');
+      const hasStemI20 = Boolean(newStemI20 && profile.stemStatus !== 'no');
+      const updatedEnd = profile.eadStartDate
+        ? calculateSuggestedEadEndDate(profile.eadStartDate, hasStemI20)
+        : profile.eadEndDate;
+      onChange({
+        ...profile,
+        stemI20IssueDate: newStemI20,
+        eadEndDate: updatedEnd,
+      });
+      return;
+    }
+
+    if (key === 'optI20IssueDate') {
+      const newOptI20 = String(value || '');
+      const hasStemI20 = Boolean(
+        profile.stemI20IssueDate && profile.stemStatus !== 'no'
+      );
+      const updatedEnd = profile.eadStartDate
+        ? calculateSuggestedEadEndDate(profile.eadStartDate, hasStemI20)
+        : profile.eadEndDate;
+      onChange({
+        ...profile,
+        optI20IssueDate: newOptI20,
+        eadEndDate: updatedEnd,
+      });
+      return;
+    }
+
     onChange({
       ...profile,
       [key]: value,
@@ -146,7 +199,7 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
       )}
 
       {/* ONE-SCREEN ONBOARDING & PROFILE FORM */}
-      <div className="bg-white dark:bg-[#111921] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-8 overflow-hidden">
+      <div className="bg-white dark:bg-[#111921] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-6 border-b border-slate-200/80 dark:border-slate-800">
           <div>
@@ -196,17 +249,13 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
                 Program end date (from I-20) <span className="text-red-600 dark:text-red-400">*</span>
               </label>
               <div className="relative mt-2 min-w-0">
-                <input
+                <DatePickerInput
                   id="program-end-date"
-                  type="date"
                   required
                   value={profile.programEndDate}
-                  onChange={(e) => updateField('programEndDate', e.target.value)}
-                  className={`block w-full min-w-0 max-w-full appearance-none box-border px-3.5 py-2.5 text-sm font-mono-tabular bg-white dark:bg-slate-950 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600 ${
-                    getFieldError('programEndDate')
-                      ? 'border-red-500 dark:border-red-500'
-                      : 'border-slate-300 dark:border-slate-700'
-                  }`}
+                  onChange={(val) => updateField('programEndDate', val)}
+                  hasError={Boolean(getFieldError('programEndDate'))}
+                  placeholder="e.g., May 15, 2026"
                 />
               </div>
               <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
@@ -343,13 +392,14 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
                     </button>
                   )}
                 </div>
-                <input
-                  id="opt-i20-date"
-                  type="date"
-                  value={profile.optI20IssueDate}
-                  onChange={(e) => updateField('optI20IssueDate', e.target.value)}
-                  className="mt-2 block w-full min-w-0 max-w-full appearance-none box-border px-3.5 py-2.5 text-sm font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
-                />
+                <div className="mt-2">
+                  <DatePickerInput
+                    id="opt-i20-date"
+                    value={profile.optI20IssueDate}
+                    onChange={(val) => updateField('optI20IssueDate', val)}
+                    placeholder="Select or type date"
+                  />
+                </div>
                 <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                   Triggers the strict <strong>30-day rule</strong>: USCIS must receive your application within 30 days of this date.
                 </p>
@@ -375,13 +425,14 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
                       </button>
                     )}
                   </div>
-                  <input
-                    id="stem-i20-date"
-                    type="date"
-                    value={profile.stemI20IssueDate}
-                    onChange={(e) => updateField('stemI20IssueDate', e.target.value)}
-                    className="mt-2 block w-full min-w-0 max-w-full appearance-none box-border px-3.5 py-2.5 text-sm font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
-                  />
+                  <div className="mt-2">
+                    <DatePickerInput
+                      id="stem-i20-date"
+                      value={profile.stemI20IssueDate}
+                      onChange={(val) => updateField('stemI20IssueDate', val)}
+                      placeholder="Select or type date"
+                    />
+                  </div>
                   <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                     Triggers the <strong>60-day rule</strong> for STEM OPT: USCIS must receive your STEM extension within 60 days.
                   </p>
@@ -407,25 +458,14 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
                     </button>
                   )}
                 </div>
-                <input
-                  id="ead-start-date"
-                  type="date"
-                  value={profile.eadStartDate}
-                  onChange={(e) => {
-                    const newStart = e.target.value;
-                    if (newStart && !profile.eadEndDate) {
-                      const suggestedEnd = addCalendarDays(newStart, 364);
-                      onChange({
-                        ...profile,
-                        eadStartDate: newStart,
-                        eadEndDate: suggestedEnd,
-                      });
-                    } else {
-                      updateField('eadStartDate', newStart);
-                    }
-                  }}
-                  className="mt-2 block w-full min-w-0 max-w-full appearance-none box-border px-3.5 py-2.5 text-sm font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
-                />
+                <div className="mt-2">
+                  <DatePickerInput
+                    id="ead-start-date"
+                    value={profile.eadStartDate}
+                    onChange={(newStart) => updateField('eadStartDate', newStart)}
+                    placeholder="Select or type date"
+                  />
+                </div>
                 <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                   Labeled &ldquo;Valid From&rdquo; on your EAD card (or your requested start date).
                 </p>
@@ -450,19 +490,24 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
                     </button>
                   )}
                 </div>
-                <input
-                  id="ead-end-date"
-                  type="date"
-                  value={profile.eadEndDate}
-                  onChange={(e) => updateField('eadEndDate', e.target.value)}
-                  className={`mt-2 block w-full min-w-0 max-w-full appearance-none box-border px-3.5 py-2.5 text-sm font-mono-tabular bg-white dark:bg-slate-950 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600 ${
-                    getFieldError('eadEndDate')?.severity === 'error'
-                      ? 'border-red-500 dark:border-red-500'
-                      : 'border-slate-300 dark:border-slate-700'
-                  }`}
-                />
+                <div className="mt-2">
+                  <DatePickerInput
+                    id="ead-end-date"
+                    value={profile.eadEndDate}
+                    onChange={(val) => updateField('eadEndDate', val)}
+                    hasError={getFieldError('eadEndDate')?.severity === 'error'}
+                    placeholder="Auto-fills from start date"
+                  />
+                </div>
                 <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                   Labeled &ldquo;Card Expires&rdquo; on your EAD card. Opens the 90-day STEM OPT filing window.
+                  {profile.eadStartDate && profile.eadEndDate && (
+                    <span className="block text-teal-700 dark:text-teal-400 font-medium mt-0.5">
+                      {profile.stemI20IssueDate && profile.stemStatus !== 'no'
+                        ? 'Auto-calculated for 2-Year STEM OPT (Start + 2 yrs − 1 day)'
+                        : 'Auto-calculated for 1-Year OPT (Start + 1 yr − 1 day)'}
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
