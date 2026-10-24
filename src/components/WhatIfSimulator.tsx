@@ -126,10 +126,10 @@ export const WhatIfSimulator: React.FC<WhatIfSimulatorProps> = ({
   return (
     <section
       id="simulator-section"
-      className="bg-white dark:bg-[#111921] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 space-y-5"
+      className="bg-white dark:bg-[#111921] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-6 space-y-5 overflow-hidden"
     >
       <div className="flex items-start justify-between gap-3 pb-4 border-b border-slate-200/80 dark:border-slate-800">
-        <div>
+        <div className="min-w-0">
           <h2 className="text-lg font-bold text-slate-900 dark:text-slate-50 flex items-center gap-2">
             <Sliders className="w-4 h-4 text-teal-700 dark:text-teal-400 shrink-0" />
             <span>What-If Date Simulator</span>
@@ -150,7 +150,7 @@ export const WhatIfSimulator: React.FC<WhatIfSimulatorProps> = ({
       </div>
 
       {/* Simulation 1: Hypothetical OPT I-20 Issue Date */}
-      <div className="space-y-2">
+      <div className="space-y-2 min-w-0">
         <label
           htmlFor="sim-opt-i20"
           className="block text-xs font-semibold text-slate-800 dark:text-slate-200"
@@ -162,24 +162,24 @@ export const WhatIfSimulator: React.FC<WhatIfSimulatorProps> = ({
           type="date"
           value={simOptI20}
           onChange={(e) => setSimOptI20(e.target.value)}
-          className="w-full px-3.5 py-2 text-xs font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
+          className="block w-full min-w-0 max-w-full appearance-none box-border px-3.5 py-2 text-xs font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
         />
 
         {simOpt30Str && opt60CutoffStr && (
-          <div className="p-3.5 rounded-xl bg-[#F7F9FA] dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 text-xs space-y-1.5">
-            <div className="flex items-center justify-between">
+          <div className="p-3.5 rounded-xl bg-[#F7F9FA] dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 text-xs space-y-1.5 min-w-0">
+            <div className="flex flex-wrap items-center justify-between gap-1">
               <span className="text-slate-600 dark:text-slate-400">30-Day I-20 Cutoff:</span>
               <span className="font-mono-tabular font-medium text-slate-900 dark:text-slate-100">
                 {formatDisplayDate(simOpt30Str)}
               </span>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-1">
               <span className="text-slate-600 dark:text-slate-400">60-Day Post-Grad Cutoff:</span>
               <span className="font-mono-tabular font-medium text-slate-900 dark:text-slate-100">
                 {formatDisplayDate(opt60CutoffStr)}
               </span>
             </div>
-            <div className="pt-1.5 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between font-semibold text-red-700 dark:text-red-400">
+            <div className="pt-1.5 border-t border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-1 font-semibold text-red-700 dark:text-red-400">
               <span>Simulated Real Deadline:</span>
               <span className="font-mono-tabular">
                 {formatDisplayDate(simulatedRealOptDeadline)} (
@@ -196,7 +196,7 @@ export const WhatIfSimulator: React.FC<WhatIfSimulatorProps> = ({
       </div>
 
       {/* Simulation 2: Requested OPT Start Date Window Check */}
-      <div className="space-y-2 pt-3 border-t border-slate-200/80 dark:border-slate-800">
+      <div className="space-y-2 pt-3 border-t border-slate-200/80 dark:border-slate-800 min-w-0">
         <label
           htmlFor="sim-opt-start"
           className="block text-xs font-semibold text-slate-800 dark:text-slate-200"
@@ -208,7 +208,7 @@ export const WhatIfSimulator: React.FC<WhatIfSimulatorProps> = ({
           type="date"
           value={simRequestedStart}
           onChange={(e) => setSimRequestedStart(e.target.value)}
-          className="w-full px-3.5 py-2 text-xs font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
+          className="block w-full min-w-0 max-w-full appearance-none box-border px-3.5 py-2 text-xs font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
         />
 
         {startOffsetFromProgEnd !== null && graceStartStr && graceEndStr && (
@@ -238,7 +238,7 @@ export const WhatIfSimulator: React.FC<WhatIfSimulatorProps> = ({
 
       {/* Simulation 3: STEM OPT I-20 60-Day Check (if EAD End Date exists) */}
       {hasEadEnd && (profile.stemStatus === 'yes' || profile.stemStatus === 'unsure') && (
-        <div className="space-y-2 pt-3 border-t border-slate-200/80 dark:border-slate-800">
+        <div className="space-y-2 pt-3 border-t border-slate-200/80 dark:border-slate-800 min-w-0">
           <label
             htmlFor="sim-stem-i20"
             className="block text-xs font-semibold text-slate-800 dark:text-slate-200"
@@ -250,18 +250,18 @@ export const WhatIfSimulator: React.FC<WhatIfSimulatorProps> = ({
             type="date"
             value={simStemI20}
             onChange={(e) => setSimStemI20(e.target.value)}
-            className="w-full px-3.5 py-2 text-xs font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
+            className="block w-full min-w-0 max-w-full appearance-none box-border px-3.5 py-2 text-xs font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
           />
 
           {simStem60Str && (
-            <div className="p-3.5 rounded-xl bg-[#F7F9FA] dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 text-xs space-y-1">
-              <div className="flex items-center justify-between">
+            <div className="p-3.5 rounded-xl bg-[#F7F9FA] dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 text-xs space-y-1 min-w-0">
+              <div className="flex flex-wrap items-center justify-between gap-1">
                 <span className="text-slate-600 dark:text-slate-400">60-Day STEM I-20 Limit:</span>
                 <span className="font-mono-tabular font-medium text-slate-900 dark:text-slate-100">
                   {formatDisplayDate(simStem60Str)}
                 </span>
               </div>
-              <div className="flex items-center justify-between font-semibold text-red-700 dark:text-red-400">
+              <div className="flex flex-wrap items-center justify-between gap-1 font-semibold text-red-700 dark:text-red-400">
                 <span>Simulated STEM Real Deadline:</span>
                 <span className="font-mono-tabular">
                   {formatDisplayDate(simulatedRealStemDeadline)}
@@ -273,7 +273,7 @@ export const WhatIfSimulator: React.FC<WhatIfSimulatorProps> = ({
       )}
 
       {/* Apply Button */}
-      <div className="pt-2 flex items-center justify-between gap-3">
+      <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
         {appliedBanner ? (
           <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
             <Check className="w-3.5 h-3.5" />

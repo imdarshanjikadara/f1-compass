@@ -56,17 +56,198 @@ function detectOutOfScopeTopic(question: string): string | null {
   return null;
 }
 
+const FALLBACK_MODELS = [
+  'gemini-3.8-flash',
+  'gemini-3.1-flash-lite',
+  'gemini-flash-latest',
+] as const;
+
+interface TimelineContextPayload {
+  todayDate?: string;
+  degreeLevel?: string;
+  stemStatus?: string;
+  enteredDates?: {
+    programEndDate?: string;
+    optI20IssueDate?: string;
+    eadStartDate?: string;
+    eadEndDate?: string;
+    stemI20IssueDate?: string;
+  };
+  calculatedReferenceDates?: {
+    optWindowOpensMinus90d?: string;
+    day59AfterProgramEnd?: string;
+    day60PostGradAndGraceEnd?: string;
+    optI20Plus30DaysCutoff?: string;
+  };
+  realDeadlines?: Array<{
+    type?: string;
+    realDeadlineDate?: string;
+    countdown?: string;
+    winningRule?: string;
+    comparedCutoff?: string;
+    explanation?: string;
+  }>;
+  unemploymentCounter?: {
+    mode?: string;
+    stage?: string;
+    usedDays?: number;
+    remainingDays?: number;
+    maxAllowedDays?: number;
+    isOverLimit?: boolean;
+    windowSummary?: string;
+  };
+  allCalculatedMilestones?: Array<{
+    title?: string;
+    date?: string;
+    countdown?: string;
+    status?: string;
+    isRealDeadline?: boolean;
+    explanation?: string;
+  }>;
+}
+
+/**
+ * Generates an accurate, rule-grounded answer directly from the student's
+ * calculated `timelineContext` whenever the upstream LLM is experiencing a 503
+ * spike or when running locally without an API key.
+ */
+function buildDeterministicTimelineAnswer(
+  question: string,
+  ctx: TimelineContextPayload = {}
+): { answer: string; isOutOfScope: boolean } {
+  const q = question.toLowerCase();
+  const entered = ctx.enteredDates || {};
+  const refs = ctx.calculatedReferenceDates || {};
+  const realDeadlines = Array.isArray(ctx.realDeadlines) ? ctx.realDeadlines : [];
+  const optReal = realDeadlines.find((d) => d.type === 'opt') || realDeadlines[0];
+  const stemReal = realDeadlines.find((d) => d.type === 'stem');
+  const unemp = ctx.unemploymentCounter || {};
+
+  const progEnd = entered.programEndDate || 'your Program End Date';
+  const day59 = refs.day59AfterProgramEnd || '59 days after your Program End Date';
+  const day60 = refs.day60PostGradAndGraceEnd || '60 days after your Program End Date';
+  const optOpen = refs.optWindowOpensMinus90d || '90 days before your Program End Date';
+  const optI20 = entered.optI20IssueDate;
+  const opt30Cutoff = refs.optI20Plus30DaysCutoff;
+
+  // 1. Day 59 / Day 60 / Grace period filing questions
+  if (/\b(day\s*59|day\s*60|59th|60th|grace\s*period|late|after\s*graduation)\b/i.test(q)) {
+    if (optI20 && optI20 !== 'Not entered yet' && opt30Cutoff && !opt30Cutoff.startsWith('Not applicable')) {
+      return {
+        answer: `Day 59 after your Program End Date (${progEnd}) is ${day59}, and your 60-day post-graduation filing window and grace period close on ${day60}. However, because your OPT I-20 was issued on ${optI20}, USCIS must also receive your application within 30 days of that I-20 date (${opt30Cutoff})—making your Real Deadline ${optReal?.realDeadlineDate || opt30Cutoff} (${optReal?.countdown || 'whichever comes first'}). If you file on ${day59}, your application is only valid if ${day59} is on or before your 30-day I-20 cutoff and USCIS officially receipts it before ${day60}; confirm your exact filing plan with your DSO.`,
+        isOutOfScope: false,
+      };
+    }
+    return {
+      answer: `Day 59 after your Program End Date (${progEnd}) is ${day59}, which is 1 day before your 60-day post-completion OPT filing window and grace period close on ${day60}. Under F-1 Compass's built-in rules, USCIS must officially receive your Form I-765 on or before ${day60} AND within 30 days of when your DSO issues your OPT recommendation I-20. Filing as late as ${day59} leaves almost no buffer if you still need to request your OPT I-20 from your DSO, so request your I-20 and confirm your submission date with your DSO right away.`,
+      isOutOfScope: false,
+    };
+  }
+
+  // 2. Unemployment counter questions
+  if (/\b(unemploy|job|work|90\s*day|150\s*day|days\s*left|remaining\s*days)\b/i.test(q)) {
+    const used = unemp.usedDays ?? 0;
+    const rem = unemp.remainingDays ?? 90;
+    const max = unemp.maxAllowedDays ?? 90;
+    const stage = unemp.stage || 'Post-Completion OPT (90 days cap)';
+    return {
+      answer: `Based on your ${stage} tracker, you have used ${used} of ${max} allowed unemployment days and have ${rem} days remaining (${unemp.windowSummary || 'based on your entered EAD dates'}). Remember that qualifying OPT employment must be at least 20 hours per week in your field of study and reported to your DSO/SEVP Portal; always verify your SEVIS employment record with your DSO.`,
+      isOutOfScope: false,
+    };
+  }
+
+  // 3. STEM OPT questions
+  if (/\b(stem|24[\s-]?month|extension|i-?983)\b/i.test(q)) {
+    if (ctx.stemStatus === 'no') {
+      return {
+        answer: `Your profile is currently set to Non-STEM, so the 24-month STEM OPT extension rules do not apply (you are tracked under the standard 12-month Post-Completion OPT window opening ${optOpen} and closing ${day60}). If your degree's 6-digit CIP code on Page 1 of your Form I-20 is on the official DHS STEM list, update your STEM status in Edit Dates and confirm with your DSO.`,
+        isOutOfScope: false,
+      };
+    }
+    if (stemReal) {
+      return {
+        answer: `For your 24-month STEM OPT extension, your Real Deadline for USCIS to receive Form I-765 is ${stemReal.realDeadlineDate} (${stemReal.countdown}), governed by ${stemReal.winningRule}. ${stemReal.explanation || 'USCIS must receive your STEM OPT application before your current EAD expires and within 60 days of your DSO issuing your STEM OPT I-20.'} Please confirm your Form I-983 and STEM I-20 timing with your DSO.`,
+        isOutOfScope: false,
+      };
+    }
+    return {
+      answer: `Under Rule 5, the 24-month STEM OPT extension filing window opens 90 days before your initial OPT EAD end date and closes on your EAD expiration date, and USCIS must receive your application within 60 days of your DSO's STEM I-20 recommendation (whichever date comes earlier). Enter your OPT EAD Start and End dates in Edit Dates to calculate your exact STEM OPT dates, and confirm eligibility with your DSO.`,
+      isOutOfScope: false,
+    };
+  }
+
+  // 4. Real Deadline / 30-day I-20 rule / When to apply questions
+  if (/\b(real\s*deadline|deadline|30[\s-]?day|i-?20|window|when\s*can\s*i\s*apply|when\s*should\s*i|earliest|latest|cutoff)\b/i.test(q)) {
+    if (optReal) {
+      return {
+        answer: `Your Post-Completion OPT Real Deadline is ${optReal.realDeadlineDate} (${optReal.countdown}), determined by ${optReal.winningRule}. ${optReal.explanation || `Your OPT filing window opens on ${optOpen} (90 days before ${progEnd}) and closes on ${day60} (60 days after ${progEnd}), or 30 days after your OPT I-20 is issued—whichever comes first.`} Always confirm your exact dates with your DSO before filing with USCIS.`,
+        isOutOfScope: false,
+      };
+    }
+    return {
+      answer: `Based on your Program End Date (${progEnd}), your Post-Completion OPT filing window opens on ${optOpen} (90 days before program end) and closes on ${day60} (60 days after program end). Once your DSO issues your OPT recommendation I-20, USCIS must receive your Form I-765 within 30 days of that I-20 issue date or by ${day60}, whichever comes earlier. Please confirm all dates with your DSO.`,
+      isOutOfScope: false,
+    };
+  }
+
+  // 5. General summary of the student's calculated timeline
+  if (optReal) {
+    return {
+      answer: `Based on your Program End Date of ${progEnd}, your OPT filing window runs from ${optOpen} to ${day60}, and your current Real Deadline is ${optReal.realDeadlineDate} (${optReal.countdown}) under ${optReal.winningRule}. You also have ${unemp.remainingDays ?? 90} of ${unemp.maxAllowedDays ?? 90} unemployment days remaining. Please confirm all filing dates and requirements with your school's DSO.`,
+      isOutOfScope: false,
+    };
+  }
+
+  return {
+    answer: `Based on your entered dates (Program End Date: ${progEnd}), your Post-Completion OPT window opens 90 days before graduation (${optOpen}) and closes 60 days after graduation (${day60}), subject to the strict 30-day DSO I-20 rule. Please check your timeline milestones or confirm specific details with your school's DSO.`,
+    isOutOfScope: false,
+  };
+}
+
+async function generateContentWithFallback(
+  ai: GoogleGenAI,
+  params: Omit<Parameters<GoogleGenAI['models']['generateContent']>[0], 'model'>
+) {
+  let lastError: unknown = null;
+  for (const modelName of FALLBACK_MODELS) {
+    try {
+      return await ai.models.generateContent({
+        ...params,
+        model: modelName,
+      });
+    } catch (err: unknown) {
+      lastError = err;
+      // Continue to next fallback model on 503 UNAVAILABLE, 429 RESOURCE_EXHAUSTED, or network error
+    }
+  }
+  throw lastError;
+}
+
 async function startServer() {
   const app = express();
   app.use(express.json({ limit: '1mb' }));
 
   app.post('/api/checklist/generate', async (req, res) => {
+    const {
+      degreeLevel,
+      stemStatus,
+      hasOptI20,
+      hasEad,
+      hasStemI20,
+      usedUnemploymentDays,
+      maxAllowedUnemploymentDays,
+      slots,
+    } = req.body || {};
+
+    if (!Array.isArray(slots) || slots.length === 0) {
+      res.status(400).json({ error: 'Checklist slots are required.' });
+      return;
+    }
+
     try {
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
-        res.status(500).json({
-          error: 'GEMINI_API_KEY is not configured on the server.',
-        });
+        res.json({ items: [] });
         return;
       }
 
@@ -78,22 +259,6 @@ async function startServer() {
           },
         },
       });
-
-      const {
-        degreeLevel,
-        stemStatus,
-        hasOptI20,
-        hasEad,
-        hasStemI20,
-        usedUnemploymentDays,
-        maxAllowedUnemploymentDays,
-        slots,
-      } = req.body || {};
-
-      if (!Array.isArray(slots) || slots.length === 0) {
-        res.status(400).json({ error: 'Checklist slots are required.' });
-        return;
-      }
 
       const promptPayload = {
         studentSituation: {
@@ -123,8 +288,7 @@ async function startServer() {
         '4. NEVER tell the student they are definitely eligible or approved for OPT or STEM OPT. Always frame eligibility and approval as conditional on DSO verification and official USCIS adjudication.',
       ].join('\n');
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
+      const response = await generateContentWithFallback(ai, {
         contents: JSON.stringify(promptPayload),
         config: {
           systemInstruction,
@@ -170,10 +334,9 @@ async function startServer() {
         : [];
 
       res.json({ items: sanitizedItems });
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Failed to generate personalized checklist.';
-      res.status(500).json({ error: message });
+    } catch {
+      // Gracefully fall back to the built-in deterministic checklist items if all models are busy (503)
+      res.json({ items: [] });
     }
   });
 
@@ -199,9 +362,7 @@ async function startServer() {
 
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
-        res.status(500).json({
-          error: 'GEMINI_API_KEY is not configured on the server.',
-        });
+        res.json(buildDeterministicTimelineAnswer(trimmedQuestion, timelineContext));
         return;
       }
 
@@ -229,48 +390,52 @@ async function startServer() {
         '4. Never give legal advice or guarantee eligibility or approval. Always remind them to confirm dates with their DSO.',
       ].join('\n');
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: JSON.stringify({
-          studentQuestion: trimmedQuestion,
-          timelineContext,
-        }),
-        config: {
-          systemInstruction,
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              answer: {
-                type: Type.STRING,
-                description: 'Short 2-4 sentence plain-English response grounded strictly in the provided dates and rules.',
+      try {
+        const response = await generateContentWithFallback(ai, {
+          contents: JSON.stringify({
+            studentQuestion: trimmedQuestion,
+            timelineContext,
+          }),
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                answer: {
+                  type: Type.STRING,
+                  description: 'Short 2-4 sentence plain-English response grounded strictly in the provided dates and rules.',
+                },
+                isOutOfScope: {
+                  type: Type.BOOLEAN,
+                  description: 'True if the question is outside the 6 built-in OPT/STEM OPT timeline and unemployment rules.',
+                },
               },
-              isOutOfScope: {
-                type: Type.BOOLEAN,
-                description: 'True if the question is outside the 6 built-in OPT/STEM OPT timeline and unemployment rules.',
-              },
+              required: ['answer', 'isOutOfScope'],
             },
-            required: ['answer', 'isOutOfScope'],
           },
-        },
-      });
+        });
 
-      const parsed = JSON.parse(response.text || '{}');
-      const answerText = sanitizeNonGuaranteeText(
-        String(
-          parsed.answer ||
-            'I can only answer questions about your entered OPT/STEM OPT dates and unemployment counter. Please contact your DSO for further assistance.'
+        const parsed = JSON.parse(response.text || '{}');
+        if (parsed.answer) {
+          res.json({
+            answer: sanitizeNonGuaranteeText(String(parsed.answer)),
+            isOutOfScope: Boolean(parsed.isOutOfScope),
+          });
+          return;
+        }
+      } catch {
+        // If all upstream Gemini models return 503 UNAVAILABLE or 429, fall through to deterministic answer
+      }
+
+      res.json(buildDeterministicTimelineAnswer(trimmedQuestion, timelineContext));
+    } catch {
+      res.json(
+        buildDeterministicTimelineAnswer(
+          String(req.body?.question || ''),
+          req.body?.timelineContext
         )
       );
-
-      res.json({
-        answer: answerText,
-        isOutOfScope: Boolean(parsed.isOutOfScope),
-      });
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Unable to answer right now.';
-      res.status(500).json({ error: message });
     }
   });
 

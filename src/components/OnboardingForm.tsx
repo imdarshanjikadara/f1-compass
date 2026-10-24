@@ -146,7 +146,7 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
       )}
 
       {/* ONE-SCREEN ONBOARDING & PROFILE FORM */}
-      <div className="bg-white dark:bg-[#111921] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-8">
+      <div className="bg-white dark:bg-[#111921] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-8 overflow-hidden">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-6 border-b border-slate-200/80 dark:border-slate-800">
           <div>
@@ -163,11 +163,11 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-7 space-y-7" noValidate>
+        <form onSubmit={handleSubmit} className="mt-7 space-y-7 min-w-0" noValidate>
           {/* Section 1: Core Academic Profile */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {/* Name (optional) */}
-            <div>
+            <div className="min-w-0">
               <label
                 htmlFor="student-name"
                 className="block text-sm font-medium text-slate-800 dark:text-slate-200"
@@ -180,7 +180,7 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
                 value={profile.name}
                 onChange={(e) => updateField('name', e.target.value)}
                 placeholder="e.g., Jordan Lee"
-                className="mt-2 w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600"
+                className="mt-2 block w-full min-w-0 max-w-full box-border px-3.5 py-2.5 text-sm bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600"
               />
               <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
                 Used only to personalize your header and calendar exports.
@@ -188,21 +188,21 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
             </div>
 
             {/* Program End Date (Required) */}
-            <div>
+            <div className="min-w-0">
               <label
                 htmlFor="program-end-date"
                 className="block text-sm font-medium text-slate-800 dark:text-slate-200"
               >
                 Program end date (from I-20) <span className="text-red-600 dark:text-red-400">*</span>
               </label>
-              <div className="relative mt-2">
+              <div className="relative mt-2 min-w-0">
                 <input
                   id="program-end-date"
                   type="date"
                   required
                   value={profile.programEndDate}
                   onChange={(e) => updateField('programEndDate', e.target.value)}
-                  className={`w-full px-3.5 py-2.5 text-sm font-mono-tabular bg-white dark:bg-slate-950 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600 ${
+                  className={`block w-full min-w-0 max-w-full appearance-none box-border px-3.5 py-2.5 text-sm font-mono-tabular bg-white dark:bg-slate-950 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600 ${
                     getFieldError('programEndDate')
                       ? 'border-red-500 dark:border-red-500'
                       : 'border-slate-300 dark:border-slate-700'
@@ -223,7 +223,7 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
           {/* Degree Level & STEM Designation */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-1">
             {/* Degree Level */}
-            <div>
+            <div className="min-w-0">
               <span className="block text-sm font-medium text-slate-800 dark:text-slate-200">
                 Degree level
               </span>
@@ -255,7 +255,7 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
             </div>
 
             {/* Is the degree STEM-designated? */}
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center justify-between gap-2">
                 <span className="block text-sm font-medium text-slate-800 dark:text-slate-200">
                   Is the degree STEM-designated?
@@ -315,7 +315,7 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
           )}
 
           {/* Divider for Optional Post-Completion OPT & STEM OPT Dates */}
-          <div className="pt-5 border-t border-slate-200/80 dark:border-slate-800">
+          <div className="pt-5 border-t border-slate-200/80 dark:border-slate-800 min-w-0">
             <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
               Optional I-20 &amp; EAD Card Dates
             </h2>
@@ -325,8 +325,8 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
 
             <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* OPT Recommendation I-20 Issue Date */}
-              <div>
-                <div className="flex items-center justify-between">
+              <div className="min-w-0">
+                <div className="flex items-center justify-between gap-2">
                   <label
                     htmlFor="opt-i20-date"
                     className="block text-sm font-medium text-slate-800 dark:text-slate-200"
@@ -337,7 +337,7 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
                     <button
                       type="button"
                       onClick={() => updateField('optI20IssueDate', '')}
-                      className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                      className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 shrink-0"
                     >
                       Clear
                     </button>
@@ -348,7 +348,7 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
                   type="date"
                   value={profile.optI20IssueDate}
                   onChange={(e) => updateField('optI20IssueDate', e.target.value)}
-                  className="mt-2 w-full px-3.5 py-2.5 text-sm font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
+                  className="mt-2 block w-full min-w-0 max-w-full appearance-none box-border px-3.5 py-2.5 text-sm font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
                 />
                 <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                   Triggers the strict <strong>30-day rule</strong>: USCIS must receive your application within 30 days of this date.
@@ -357,8 +357,8 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
 
               {/* STEM OPT I-20 Issue Date (Hidden for Non-STEM students) */}
               {profile.stemStatus !== 'no' && (
-                <div>
-                  <div className="flex items-center justify-between">
+                <div className="min-w-0">
+                  <div className="flex items-center justify-between gap-2">
                     <label
                       htmlFor="stem-i20-date"
                       className="block text-sm font-medium text-slate-800 dark:text-slate-200"
@@ -369,7 +369,7 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
                       <button
                         type="button"
                         onClick={() => updateField('stemI20IssueDate', '')}
-                        className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                        className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 shrink-0"
                       >
                         Clear
                       </button>
@@ -380,7 +380,7 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
                     type="date"
                     value={profile.stemI20IssueDate}
                     onChange={(e) => updateField('stemI20IssueDate', e.target.value)}
-                    className="mt-2 w-full px-3.5 py-2.5 text-sm font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
+                    className="mt-2 block w-full min-w-0 max-w-full appearance-none box-border px-3.5 py-2.5 text-sm font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
                   />
                   <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                     Triggers the <strong>60-day rule</strong> for STEM OPT: USCIS must receive your STEM extension within 60 days.
@@ -389,8 +389,8 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
               )}
 
               {/* OPT EAD Start Date */}
-              <div>
-                <div className="flex items-center justify-between">
+              <div className="min-w-0">
+                <div className="flex items-center justify-between gap-2">
                   <label
                     htmlFor="ead-start-date"
                     className="block text-sm font-medium text-slate-800 dark:text-slate-200"
@@ -401,7 +401,7 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
                     <button
                       type="button"
                       onClick={() => updateField('eadStartDate', '')}
-                      className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                      className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 shrink-0"
                     >
                       Clear
                     </button>
@@ -424,7 +424,7 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
                       updateField('eadStartDate', newStart);
                     }
                   }}
-                  className="mt-2 w-full px-3.5 py-2.5 text-sm font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
+                  className="mt-2 block w-full min-w-0 max-w-full appearance-none box-border px-3.5 py-2.5 text-sm font-mono-tabular bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600"
                 />
                 <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                   Labeled &ldquo;Valid From&rdquo; on your EAD card (or your requested start date).
@@ -432,8 +432,8 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
               </div>
 
               {/* OPT EAD End Date */}
-              <div>
-                <div className="flex items-center justify-between">
+              <div className="min-w-0">
+                <div className="flex items-center justify-between gap-2">
                   <label
                     htmlFor="ead-end-date"
                     className="block text-sm font-medium text-slate-800 dark:text-slate-200"
@@ -444,7 +444,7 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
                     <button
                       type="button"
                       onClick={() => updateField('eadEndDate', '')}
-                      className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                      className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 shrink-0"
                     >
                       Clear
                     </button>
@@ -455,7 +455,7 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({
                   type="date"
                   value={profile.eadEndDate}
                   onChange={(e) => updateField('eadEndDate', e.target.value)}
-                  className={`mt-2 w-full px-3.5 py-2.5 text-sm font-mono-tabular bg-white dark:bg-slate-950 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600 ${
+                  className={`mt-2 block w-full min-w-0 max-w-full appearance-none box-border px-3.5 py-2.5 text-sm font-mono-tabular bg-white dark:bg-slate-950 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-600 ${
                     getFieldError('eadEndDate')?.severity === 'error'
                       ? 'border-red-500 dark:border-red-500'
                       : 'border-slate-300 dark:border-slate-700'

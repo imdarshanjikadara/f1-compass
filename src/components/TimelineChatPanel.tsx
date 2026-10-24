@@ -268,13 +268,13 @@ export const TimelineChatPanel: React.FC<TimelineChatPanelProps> = ({
       </div>
 
       {/* Input Form */}
-      <form onSubmit={handleSubmit} className="flex items-center gap-2 pt-1">
+      <form onSubmit={handleSubmit} className="flex items-center gap-2 pt-1 min-w-0">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="e.g., What happens if I file on day 59?"
-          className="flex-1 px-3.5 py-2 text-xs sm:text-sm bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600"
+          className="flex-1 min-w-0 max-w-full box-border px-3.5 py-2 text-xs sm:text-sm bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600"
         />
         <button
           type="submit"
@@ -297,7 +297,7 @@ export const TimelineChatPanel: React.FC<TimelineChatPanelProps> = ({
       {/* Desktop & Inline Side-Column Card */}
       <section
         id="chat-assistant-section"
-        className="bg-white dark:bg-[#111921] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 space-y-4"
+        className="bg-white dark:bg-[#111921] border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-6 space-y-4 overflow-hidden"
       >
         <div className="flex items-start justify-between gap-3 pb-3.5 border-b border-slate-200/80 dark:border-slate-800">
           <div>

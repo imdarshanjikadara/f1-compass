@@ -2,5 +2,7 @@
   "name": "F-1 Compass",
   "description": "Free planning tool that helps F-1 international students track OPT and STEM OPT filing windows, grace periods, and unemployment days.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

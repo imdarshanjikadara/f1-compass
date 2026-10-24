@@ -796,6 +796,9 @@ export default function App() {
                 </>
               ) : (
                 <>
+                  <strong className="font-semibold text-slate-900 dark:text-slate-100">
+                    Disclaimer:
+                  </strong>{' '}
                   Planning tool only, not legal advice. Always confirm dates with your DSO and official USCIS guidance.{' '}
                   <button
                     type="button"
